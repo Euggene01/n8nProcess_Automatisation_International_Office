@@ -1,0 +1,250 @@
+{
+  "name": "Project Automatisation International Office Uni Marburg",
+  "nodes": [
+    {
+      "parameters": {
+        "mode": "combine",
+        "fieldsToMatchString": "['Pers.-Nr.']",
+        "joinMode": "enrichInput1",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        752,
+        16
+      ],
+      "id": "66904f26-da29-423e-881d-22ee938ec573",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "fromEmail": "euggeneeuggene@gmail.com",
+        "toEmail": "={{ $json['E-Mail-Adresse'] }}",
+        "subject": "={{ $json.emailSubject }}",
+        "html": "={{ $json.emailBody }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        784,
+        400
+      ],
+      "id": "076dab3b-dd61-43bf-9cc3-964ae8f9431f",
+      "name": "Send an Email",
+      "webhookId": "45b10793-4445-4f86-8632-681d79ebdcb9",
+      "credentials": {
+        "smtp": {
+          "id": "dSeJ9Wxe1l7EZFpA",
+          "name": "SMTP account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "download",
+        "fileId": {
+          "__rl": true,
+          "value": "1PKsN96Ab02fbGIbVJKLxMzcNOBBPgsTi",
+          "mode": "list",
+          "cachedResultName": "Zimmerreservierungen IO.xlsx",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1PKsN96Ab02fbGIbVJKLxMzcNOBBPgsTi/edit?usp=drivesdk&ouid=100282038696835202361&rtpof=true&sd=true"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        304,
+        -128
+      ],
+      "id": "f6e1d64c-2ed8-48c6-89bb-9d158f37df1e",
+      "name": "Download Table 1",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "GDE9qksTU3uPlNFN",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "download",
+        "fileId": {
+          "__rl": true,
+          "value": "1CMg20wTqCd8yc8VW7mXZtLp2V_oL_Qol",
+          "mode": "list",
+          "cachedResultName": "Reservierungsliste_2026-02-24.xlsx",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1CMg20wTqCd8yc8VW7mXZtLp2V_oL_Qol/edit?usp=drivesdk&ouid=100282038696835202361&rtpof=true&sd=true"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        304,
+        144
+      ],
+      "id": "16c40103-8213-483d-b8a9-2054ded64c8f",
+      "name": "Download Table 2",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "GDE9qksTU3uPlNFN",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "794663a8-31cb-418b-a895-822a3d662c9f",
+      "name": "Trigger (Click)"
+    },
+    {
+      "parameters": {
+        "operation": "xlsx",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1.2,
+      "position": [
+        528,
+        -128
+      ],
+      "id": "290e4ce3-c71d-46f9-8e5f-5fe9508fe76c",
+      "name": "Extract from 1"
+    },
+    {
+      "parameters": {
+        "operation": "xlsx",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1.2,
+      "position": [
+        528,
+        144
+      ],
+      "id": "afb5eb2d-059b-44fc-a748-627782c50ee4",
+      "name": "Extract from 2"
+    },
+    {
+      "parameters": {
+        "language": "pythonNative",
+        "pythonCode": "# Get all items from the input\nitems = _items\noutput = []\n\nfor item in items:\n    data = item[\"json\"]\n    \n    vorname = data.get(\"Vorname\", \"\")\n    name = data.get(\"Name\", \"\")\n    strasse = data.get(\"Straße\", \"\")\n    plz_ort = data.get(\"PLZ Ort\", \"\")\n    zi_nr = data.get(\"Zi.Nr.\", \"\")\n    pers_nr = data.get(\"Pers.-Nr.\", \"\")\n    programm = data.get(\"Programm\", \"\")\n    \n    kaution = str(data.get(\"Kaution\", \"\"))\n    monatsmiete = str(data.get(\"Monatsmiete\", \"\"))\n    \n    # --- ENGLISH VERSION (HTML) ---\n    if programm == \"Overseas\":\n        payment_en = \"You do not need to transfer any money, as your program is Overseas. All costs are covered by our partners.\"\n    else:\n        payment_en = f\"\"\"Please transfer the amount of <b>{kaution} € deposit</b> + <b>{monatsmiete} € monthly rent</b> to the following account:\n        <br><br>\n        <b>Account Holder:</b> International Office, University of Marburg<br>\n        <b>Bank Name:</b> Sparkasse Marburg-Biedenkopf<br>\n        <b>IBAN:</b> DE12 3456 7890 1234 5678 90<br>\n        <b>BIC:</b> HELADEF1MAR<br><br>\n        <b>Reference:</b> {pers_nr}\"\"\"\n        \n    body_en = f\"\"\"<p>Hello {vorname} {name},</p>\n<p>We would like to inform you that your reservation is confirmed. Your address is: <b>{strasse}, {plz_ort}</b>, room number <b>{zi_nr}</b>.</p>\n<p>{payment_en}</p>\n<p>Best regards,<br>International Office</p>\"\"\"\n\n    # --- GERMAN VERSION (HTML) ---\n    if programm == \"Overseas\":\n        payment_de = \"Sie müssen nichts überweisen, da Sie am Overseas-Programm teilnehmen. Alle Kosten werden von unseren Partnern übernommen.\"\n    else:\n        payment_de = f\"\"\"Bitte überweisen Sie den Betrag von <b>{kaution} € Kaution</b> + <b>{monatsmiete} € Monatsmiete</b> auf folgendes Konto:\n        <br><br>\n        <b>Kontoinhaber:</b> International Office, Universität Marburg<br>\n        <b>Bank:</b> Sparkasse Marburg-Biedenkopf<br>\n        <b>IBAN:</b> DE12 3456 7890 1234 5678 90<br>\n        <b>BIC:</b> HELADEF1MAR<br><br>\n        <b>Verwendungszweck:</b> {pers_nr}\"\"\"\n\n    body_de = f\"\"\"<p>Hallo {vorname} {name},</p>\n<p>wir freuen uns, Ihnen mitteilen zu können, dass Ihre Reservierung bestätigt ist. Ihre Adresse ist: <b>{strasse}, {plz_ort}</b>, Zimmernummer <b>{zi_nr}</b>.</p>\n<p>{payment_de}</p>\n<p>Mit freundlichen Grüßen,<br>International Office</p>\"\"\"\n\n    # --- COMBINED EMAIL ---\n    subject = \"Room Reservation Confirmation / Zimmerreservierungsbestätigung\"\n    \n    # Separator using HTML (horizontal line)\n    body = f\"\"\"\n    {body_en}\n    <hr style=\"border: 1px solid #ccc; margin: 20px 0;\">\n    {body_de}\n    \"\"\"\n\n    # Create a NEW dictionary\n    new_data = dict(data)\n    new_data[\"emailSubject\"] = subject\n    new_data[\"emailBody\"] = body\n    \n    output.append({\"json\": new_data})\n\nreturn output"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        976,
+        16
+      ],
+      "id": "e4919d38-126f-46f4-b66d-5f6135f38448",
+      "name": "Business Logics"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Business Logics",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download Table 1": {
+      "main": [
+        [
+          {
+            "node": "Extract from 1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download Table 2": {
+      "main": [
+        [
+          {
+            "node": "Extract from 2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Trigger (Click)": {
+      "main": [
+        [
+          {
+            "node": "Download Table 2",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Download Table 1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract from 1": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract from 2": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Business Logics": {
+      "main": [
+        [
+          {
+            "node": "Send an Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "f6409373-a64f-4d59-a5b4-2e9fbc57cfbb",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "c8abea4ed9279c965fc2031fca157e9a4c3d5e849c245f4d63e3fc303e2cb80e"
+  },
+  "nodeGroups": [],
+  "id": "6pKe9jXxS4kqlbmT",
+  "tags": []
+}
