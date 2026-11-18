@@ -25,6 +25,38 @@ Die benötigte Zeit sinkt von 23,33 Stunden auf 4 Minuten pro Jahr. Das entspric
 ### Soll-Zustand (Automatisierter n8n-Workflow)
 ![Soll-Zustand](https://raw.githubusercontent.com/Euggene01/n8nProcess_Automatisation_International_Office/b29e10e2e62207422d902eeaf017cada17710536/Process_Automatisation_International_Office/BPMN%202.0/sollProzess.svg)
 Automatisches Mergen, dynamische Logik für Erasmus/Overseas, Loop für alle Datensätze
+## Technologie Wahl
+Für die Umsetzung dieses Prototyps wurde bewusst n8n gewählt. n8n ist eine Open-Source-Plattform für Workflow-Automatisierung, die sich besonders für die Digitalisierung von einfachen, linearen Geschäftsprozessen eignet.
+**Warum nicht andere Tools?**
+Zapier / Make.com: Diese Tools sind hervorragend für SaaS-Integrationen, aber sie sind cloudbasiert (Datenschutzbedenken bei Studentendaten) und verursachen bei zunehmender Komplexität hohe monatliche Abo-Kosten.
+Reine Python/Java-Skripte: Ein reines Skript ist schwerer zu warten, wenn die Person, die es geschrieben hat, das Team verlässt. n8n bietet eine visuelle Dokumentation des Prozesses, die auch von Nicht-Programmierern verstanden wird.
 ## Technische Umsetzung
 ![Technische Umsetzung](https://github.com/Euggene01/n8nProcess_Automatisation_International_Office/raw/main/Process_Automatisation_International_Office/Screenshots/n8n_workflow.jpg?raw=true)
 Die Business-Logik ist in der Datei email_generator.py implementiert.
+## Prerequisites & Installation
+1. Voraussetzungen:
+
+Ein n8n-Account (Cloud) oder eine lokale n8n-Instanz.
+
+Zwei Excel-Tabellen (eine für Zimmerdaten, eine für Kontaktdaten). Beide müssen die Spalte Pers.-Nr. enthalten.
+
+Ein E-Mail-Konto mit SMTP-Zugang (z. B. eine Testadresse oder das Universitätskonto).
+
+2. Daten vorbereiten:
+
+Variante A (n8n Cloud): Laden Sie die beiden Excel-Tabellen in Ihren Google Drive hoch.
+
+Variante B (Lokales n8n): Legen Sie die beiden Excel-Tabellen im lokalen Dateisystem ab.
+
+3. Workflow importieren und ausführen:
+
+Laden Sie die .json Datei aus diesem Repository herunter.
+
+Öffnen Sie Ihre n8n-Instanz und klicken Sie oben rechts auf "Import from File". Wählen Sie die heruntergeladene JSON-Datei aus.
+
+Credentials einrichten: Klicken Sie auf den Knoten Google Drive (oder Read File), um sich mit Ihrem Google-Konto zu verbinden. Klicken Sie auf den Knoten Send Email, um Ihre SMTP-Zugangsdaten (Host, Port, User, Passwort) einzugeben.
+
+Testlauf: Klicken Sie oben rechts auf "Execute Workflow". Der Prozess liest die Daten ein, führt den Merge durch, generiert die E-Mails und versendet sie.
+
+Sicherheitshinweis für den Test: Ändern Sie im Knoten Send Email das Feld To Email temporär auf Ihre eigene E-Mail-Adresse, um zu prüfen, ob das Layout und die Logik (Erasmus vs. Overseas) korrekt funktionieren, bevor Sie echte E-Mails an Studierende senden.
+
